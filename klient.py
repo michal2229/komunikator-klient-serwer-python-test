@@ -25,8 +25,11 @@ for s in socks:
 
 login = ''
 haslo = ''
+lista_znajomych = []
+
+print ("MENU:\n 1-dodaj konto\n 2-usun konto\n 3-koniec programu\nwybierz opcje:")
+
 dzialaj = True
-print ("MENU:\n 1-dodaj konto\n 2-usun konto\n 3-koniec programu")
 while dzialaj:
     
     time.sleep(1)
@@ -56,14 +59,15 @@ while dzialaj:
 
     x = msvcrt.kbhit()
     if x: 
-        print ord(msvcrt.getch())
-
         #menu = 0      
-        print ("MENU:\n 1-dodaj konto\n 2-usun konto\n 3-koniec programu")
-        menu = raw_input('wybierz opcje: ')
-
+        #print ("MENU:\n 1-dodaj konto\n 2-usun konto\n 3-koniec programu")
+        menu = msvcrt.getch() #raw_input('wybierz opcje: ')
+        print menu
         
         if menu == '0':
+
+
+            
             message = raw_input("wpisz wiadomosc asdf")
             # Send messages on both sockets
             if message:
@@ -81,13 +85,21 @@ while dzialaj:
         if menu == '1':
             print("Dodaj konto do srwera")
             login = raw_input('Podaj login: ')
-            if lista_kont.has_key(login):
-                print ('podany login juz istnieje')
-            else:
-                haslo = raw_input('Dodaj haslo: ')
-                lista_kont[login]=haslo
-                print lista_kont
+            haslo = raw_input('Dodaj haslo: ')
 
+            message = "dodajKonto:"+login+";"+haslo # generowanie zapytania do serwera
+
+            # Send messages on both sockets
+            if message:
+                for s in socks:
+                    print >>sys.stderr, '%s: sending "%s"' % (s.getsockname(), message)
+                    s.send(message)
+            for s in socks:
+                data = s.recv(1024)
+            print >>sys.stderr, '%s: received "%s"' % (s.getsockname(), data)
+            if not data:
+                #print >>sys.stderr, 'closing socket', s.getsockname()
+                s.close()
                 
         elif menu == '2':
             login = str(raw_input('Ktore konto chcesz usunac?: '))
@@ -106,6 +118,8 @@ while dzialaj:
             dzialaj = False
         else:
             print("zla opcja")
+            
+        print ("MENU:\n 1-dodaj konto\n 2-usun konto\n 3-koniec programu\nwybierz opcje:")
         
 input("\n\nAby zakonczyc program, nacisnij enter")
 
