@@ -8,7 +8,7 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setblocking(0)
 
 # Bind the socket to the port
-server_address = ('localhost', 10000)
+server_address = ('localhost', 8036)
 print >>sys.stderr, 'starting up on %s port %s' % server_address
 server.bind(server_address)
 
@@ -29,9 +29,38 @@ lista_zalogowanych = []
 komunikat = ""
 
 
-lista_kont = {"maja":{"haslo":"777", "tempIp":None, "kontakty":[]}, "ewa":{"haslo":"777", "tempIp":None, "kontakty":[]}}
+lista_kont = {"maja":{"haslo":"777", "tempIp":None, "kontakty":['ewa','ala']}, "ewa":{"haslo":"777", "tempIp":None, "kontakty":[]},
+             "ala":{"haslo":"777", "tempIp":None, "kontakty":[]} }
+
+def dodajKontakt(login, loginZnajomego):
+    if lista_kont.has_key(login):
+        if lista_kont.has_key(loginZnajomego):
+            if loginZnajomego in lista_kont[login]["kontakty"]:
+                return False
+            else:
+                lista_kont[login]["kontakty"].append(loginZnajomego)
+                return True
+        else:
+            return False
+    else:
+        return False
 
 
+    
+def sprawdz(login, loginZnajomego):
+    if lista_kont.has_key(login):
+        if lista_kont.has_key(loginZnajomego):
+            if loginZnajomego in lista_kont[login]["kontakty"]:
+                return True
+            else:
+                print "nie jestes znajomym"
+                return False
+        else:
+            print "konto nie istnieje"
+            return False
+    else:
+        return False
+    
 def dodajKonto(login, haslo):
     if lista_kont.has_key(login):
         return False
@@ -144,37 +173,59 @@ while inputs:
 
                     
                 elif komenda[0] == "dodajKontakt":
-                    print "dodanie kontaktu"
+                    dane_komendy = komenda[1].split(";")
+                    if dodajKontakt(dane_komendy[0],dane_komendy[1]):
+                        komunikat = "zostal dodany"
+                    else:
+                        komunikat = "nie udalo sie dodac kontaktu "
+                    print lista_kont
 
 
 
-                    
-                elif komenda[0] == "usunKontakt":
-                    print "usuwanie kontaktu"
-
-
-
+               
                     
                 elif komenda[0] == "wyslijWiadomosc":
-                    dane_komendy = komenda[1].split(";")
-                    
-                    if dane_komendy[0] in lista_zalogowanych:
-                        message_queues[ lista_kont[dane_komendy[0]]["tempIp"]].put(dane_komendy[1])
-                        komunikat = "wiadomosc wyslano"
+                    dane_komendy = komenda[1].split(".")
+                    cos = dane_komendy[1].split(";")
+                    if cos[0] in lista_zalogowanych:
+                        if sprawdz(dane_komendy[0],cos[0]):
+                             #komunikat = " jestes znajomym z " + cos[0]+" mozesz mu wyslac wiadomosc"
+                             message_queues[ lista_kont[cos[0]]["tempIp"]].put(cos[1])
+                             komunikat = "wiadomosc wyslano"
+                        else:
+                            komunikat = "nie jestes znajomym z " + cos[0]
+                             
                     else:
-                        komunikat =  "uzytkownik " + dane_komendy[0] + " nie jest zalogowany"
-                    
+                         komunikat =  "uzytkownik " + cos[0] + " nie jest zalogowany"
+                
+                        
 
 
                     
+                elif komenda[0] == "pobierzListe":
+                    lista = ",".join(lista_zalogowanych)
+                    komunikat = "to jest lista zalogowanych uzytkownikow: " + lista
+
+
+
                 elif komenda[0] == "pobierzKontakty":
-                    print "pobieranie kontkatow"
+                    if lista_kont.has_key(komenda[1]):
+                        listaK = ",".join(lista_kont[komenda[1]]["kontakty"])
+                        komunikat = "to jest lista twoich znajomych: " + listaK
+                    else:
+                        komunikat = "blad"
 
 
 
                     
-                elif komenda[0] == "sprawdzZnajmosc":
-                    print "sprawdzanie"
+                elif komenda[0] == "sprawdzZnajomosc":
+                    dane_komendy = komenda[1].split(";")
+                    if sprawdz(dane_komendy[0],dane_komendy[1]):
+                        komunikat = " jestes znajomym z " + dane_komendy[1]+" mozesz mu wyslac wiadomosc"
+                    else:
+                        komunikat = "blad"
+                        
+                    
 
                 elif komenda[0] == "odpytanie":
                     komunikat = " "

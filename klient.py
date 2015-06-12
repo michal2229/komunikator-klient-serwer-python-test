@@ -3,11 +3,7 @@ import sys
 import msvcrt
 import time
 
-messages = [ 'This is the message. ',
-             'It will be sent ',
-             'in parts.',
-             ]
-server_address = ('localhost', 10000)
+server_address = ('localhost', 8036)
 
 # Create a TCP/IP socket
 socks = [ socket.socket(socket.AF_INET, socket.SOCK_STREAM),
@@ -27,7 +23,7 @@ login = ''
 haslo = ''
 lista_znajomych = []
 
-print ("MENU:\n 1-dodaj konto\n 2-usun konto\n 3-koniec programu\nwybierz opcje:")
+print ("MENU:\n 1-dodaj konto\n 2-usun konto\n 3-zaloguj\n 4-wyloguj\n 5-dodaj kontakt\n 7-wyslij wiadomosc\n 8-pobierz liste zalogowanych\n 6-pobierz liste znajomych \n 9 - koniec\n \nwybierz opcje:")
 
 dzialaj = True
 while dzialaj:
@@ -41,27 +37,11 @@ while dzialaj:
     if data != " ":
         print >>sys.stderr, '%s: received "%s"' % (s.getsockname(), data)
 
-
-                
-    '''message = raw_input("wpisz wiadomosc")
-    # Send messages on both sockets
-    if message:
-        for s in socks:
-            print >>sys.stderr, '%s: sending "%s"' % (s.getsockname(), message)
-            s.send(message)'''
-
-    '''for s in socks:
-        data = s.recv(1024)
-        print >>sys.stderr, '%s: received "%s"' % (s.getsockname(), data)
-        if not data:
-            #print >>sys.stderr, 'closing socket', s.getsockname()
-            s.close()'''
-
+    #Return true if a keypress is waiting to be read
     x = msvcrt.kbhit()
-    if x: 
-        #menu = 0      
-        #print ("MENU:\n 1-dodaj konto\n 2-usun konto\n 3-koniec programu")
-        menu = msvcrt.getch() #raw_input('wybierz opcje: ')
+    if x:
+        #Read a keypress and return the resulting character
+        menu = msvcrt.getch() 
         print menu
         
         if menu == '0':
@@ -102,45 +82,131 @@ while dzialaj:
                 s.close()
                 
         elif menu == '2':
-            login = str(raw_input('Ktore konto chcesz usunac?: '))
-            if lista_kont.has_key(login):
-                haslo = raw_input('Podaj haslo: ')
-                if lista_kont[login]==haslo:
-                    del lista_kont[login]
-                    print lista_kont
-                else:
-                    print ("zle haslo")
-            else:
-                print(login,"nie istnieje")
+            print("usuwanie konta z serwera")
+            login = raw_input('Podaj login: ')
+            haslo = raw_input('Dodaj haslo: ')
 
-                
+            message = "usunKonto:"+login+";"+haslo
+            if message:
+                for s in socks:
+                    print >>sys.stderr, '%s: sending "%s"' % (s.getsockname(), message)
+                    s.send(message)
+            for s in socks:
+                data = s.recv(1024)
+            print >>sys.stderr, '%s: received "%s"' % (s.getsockname(), data)
+            if not data:
+                #print >>sys.stderr, 'closing socket', s.getsockname()
+                s.close()
+
         elif menu == '3':
+            print("logowanie do serwera")
+            login = raw_input('Podaj login: ')
+            haslo = raw_input('Dodaj haslo: ')
+
+            message = "zaloguj:"+login+";"+haslo
+            if message:
+                for s in socks:
+                    print >>sys.stderr, '%s: sending "%s"' % (s.getsockname(), message)
+                    s.send(message)
+            for s in socks:
+                data = s.recv(1024)
+            print >>sys.stderr, '%s: received "%s"' % (s.getsockname(), data)
+            if not data:
+                #print >>sys.stderr, 'closing socket', s.getsockname()
+                s.close()
+
+        elif menu == '4':
+            print("wylogowanie")
+            login = raw_input('Podaj login: ')
+            haslo = raw_input('Dodaj haslo: ')
+
+            message = "wyloguj:"+login+";"+haslo
+            if message:
+                for s in socks:
+                    print >>sys.stderr, '%s: sending "%s"' % (s.getsockname(), message)
+                    s.send(message)
+            for s in socks:
+                data = s.recv(1024)
+            print >>sys.stderr, '%s: received "%s"' % (s.getsockname(), data)
+            if not data:
+                #print >>sys.stderr, 'closing socket', s.getsockname()
+                s.close()
+
+        elif menu == '5':
+            print("dodaj znajomego")
+            login = raw_input('Podaj login: ')
+            loginZnajomego = raw_input('Podaj login znajomego: ')
+            
+            
+            message = "dodajKontakt:"+login+";"+loginZnajomego
+            if message:
+                for s in socks:
+                    print >>sys.stderr, '%s: sending "%s"' % (s.getsockname(), message)
+                    s.send(message)
+            for s in socks:
+                data = s.recv(1024)
+            print >>sys.stderr, '%s: received "%s"' % (s.getsockname(), data)
+            if not data:
+                #print >>sys.stderr, 'closing socket', s.getsockname()
+                s.close()
+
+        
+        
+        elif menu == '7':
+            print("wysylanie wiadomosci")
+            login0 = raw_input('Podaj swoj login: ')
+            login = raw_input('Podaj login do ktorego chcesz wyslac wiadomosc: ')
+            wiadomosc = raw_input('wiadomosc: ')
+
+            message = "wyslijWiadomosc:"+login0+"."+login+";"+wiadomosc
+            if message:
+                for s in socks:
+                    print >>sys.stderr, '%s: sending "%s"' % (s.getsockname(), message)
+                    s.send(message)
+            for s in socks:
+                data = s.recv(1024)
+            print >>sys.stderr, '%s: received "%s"' % (s.getsockname(), data)
+            if not data:
+                #print >>sys.stderr, 'closing socket', s.getsockname()
+                s.close()
+
+        elif menu == '8':
+            message = "pobierzListe:"
+            if message:
+                for s in socks:
+                    print >>sys.stderr, '%s: sending "%s"' % (s.getsockname(), message)
+                    s.send(message)
+            for s in socks:
+                data = s.recv(1024)
+            print >>sys.stderr, '%s: received "%s"' % (s.getsockname(), data)
+            if not data:
+                #print >>sys.stderr, 'closing socket', s.getsockname()
+                s.close()
+
+        elif menu == '6':
+            login = raw_input('Podaj login: ')
+            message = "pobierzKontakty:"+login
+            if message:
+                for s in socks:
+                    print >>sys.stderr, '%s: sending "%s"' % (s.getsockname(), message)
+                    s.send(message)
+            for s in socks:
+                data = s.recv(1024)
+            print >>sys.stderr, '%s: received "%s"' % (s.getsockname(), data)
+            if not data:
+                #print >>sys.stderr, 'closing socket', s.getsockname()
+                s.close()
+        
+        elif menu == '9':
             dzialaj = False
         else:
             print("zla opcja")
             
-        print ("MENU:\n 1-dodaj konto\n 2-usun konto\n 3-koniec programu\nwybierz opcje:")
+        print ("MENU:\n 1-dodaj konto\n 2-usun konto\n 3-zaloguj\n 4-wyloguj\n 5-dodaj kontakt\n 7-wyslij wiadomosc\n 8-pobierz liste zalogowanych\n 6-pobierz liste znajomych \n 9 - koniec\n \nwybierz opcje:")
         
-input("\n\nAby zakonczyc program, nacisnij enter")
 
 
 
 
 
-'''
-    message = raw_input("wpisz wiadomosc")
-    # Send messages on both sockets
-    if message:
-        for s in socks:
-            print >>sys.stderr, '%s: sending "%s"' % (s.getsockname(), message)
-            s.send(message)
 
-    # Read responses on both sockets
-    for s in socks:
-        data = s.recv(1024)
-        print >>sys.stderr, '%s: received "%s"' % (s.getsockname(), data)
-        if not data:
-            print >>sys.stderr, 'closing socket', s.getsockname()
-            s.close()
-
-          '''  
